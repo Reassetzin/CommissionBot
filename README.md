@@ -83,8 +83,12 @@ from these, nothing else needs to change.
 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) → **New Application**.
 2. **Bot** tab → **Reset Token**, copy it → this is `DISCORD_TOKEN`.
-3. **OAuth2 → General** → copy **Client ID** → this is `CLIENT_ID` (needed for `/payment`).
-4. **OAuth2 → URL Generator**:
+3. **Bot** tab → scroll to **Privileged Gateway Intents** → enable **Message
+   Content Intent**. Without this, Discord redacts the text of every message
+   in transcripts (they'll show up as `[no content]`) even though the bot
+   can still read message metadata fine otherwise.
+4. **OAuth2 → General** → copy **Client ID** → this is `CLIENT_ID` (needed for `/payment`).
+5. **OAuth2 → URL Generator**:
    - Scopes: `bot`, `applications.commands`
    - Bot permissions: `Manage Channels`, `View Channels`, `Send Messages`,
      `Manage Messages`, `Attach Files`, `Read Message History`, `Embed Links`

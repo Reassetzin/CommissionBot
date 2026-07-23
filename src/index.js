@@ -24,11 +24,13 @@ if (!config.token) {
   process.exit(1);
 }
 
-// Guilds is the only intent required: buttons, select menus, modals, and slash
-// commands all arrive via interaction payloads, and channel.messages.fetch()
-// (used for transcripts and for finding the pinned panel) works over REST
-// without needing the privileged Message Content intent.
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Guilds covers buttons/select menus/modals/slash commands. GuildMessages +
+// MessageContent are needed too, specifically for transcripts — Discord
+// redacts the `content` field (even on REST fetch() calls, not just live
+// gateway events) unless the bot has the privileged Message Content Intent.
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+});
 
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
