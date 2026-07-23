@@ -14,11 +14,13 @@ function buildPanel(guild) {
         'you can select as many services as you need.'
     )
     .addFields(
-      Object.values(services).map((s) => ({
-        name: `${s.emoji} ${s.label}`,
-        value: s.price ? `Starting at $${s.price}` : 'Custom quote',
-        inline: true,
-      }))
+      Object.values(services)
+        .filter((s) => !s.hideFromPanel)
+        .map((s) => ({
+          name: `${s.emoji} ${s.label}`,
+          value: s.price ? `Starting at $${s.price}` : 'Custom quote',
+          inline: true,
+        }))
     )
     .setFooter({ text: 'Starting prices are a baseline — final quotes depend on scope.' });
 
