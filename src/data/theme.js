@@ -4,4 +4,6 @@ module.exports = {
   brand: 0x38bdf8, // sky blue
   success: 0x22c55e, // ticket created
   closed: 0xf87171, // ticket closed
+  gold: 0xfacc15, // reviews / testimonials
+  info: 0xa78bfa, // ToS / payment info
 };

@@ -4,7 +4,8 @@
   "description": "Discord commission-ticket bot for Studio Duo",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "deploy": "node src/deploy-commands.js"
   },
   "engines": {
     "node": ">=18.0.0"

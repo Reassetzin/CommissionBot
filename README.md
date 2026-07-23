@@ -13,15 +13,24 @@ channels. Built with `discord.js` v14, meant to run on Railway.
    Model, Map Build, UI per Frame, Not sure / Other).
 3. Selecting service(s) immediately creates a private channel
    `commission-<username>` under the configured "Commissions" category,
-   visible only to that user and the staff role, and posts a summary embed
-   listing the selected services + starting prices, with a prompt asking
-   the user to reply with their deadline and a project description — plus
-   a **Close Ticket** button, pinging the notify role.
+   visible only to that user and the staff role. The bot posts:
+   - a summary embed listing the selected services + starting prices, with a
+     prompt asking the user to reply with their deadline and a project
+     description, plus **Request Feedback** and **Close Ticket** buttons
+   - a Terms of Service embed (edit `src/data/tos.js`) with an **I Agree**
+     button — only the ticket opener can click it
 4. A user can't open a second ticket while one is already open — the bot
    checks for an existing `commission-<username>` channel both when the
    button is clicked and again on service selection.
-5. Staff clicks **Close Ticket** → bot saves a gzipped transcript to the
-   log channel, then deletes the ticket channel a few seconds later.
+5. Staff run `/payment amount:"$75 (50% deposit)"` in the ticket channel to
+   post a payment-details embed with your links (edit
+   `src/data/paymentMethods.js`).
+6. When the commission is delivered, staff click **Request Feedback** →
+   posts a prompt with a **Leave a Review** button. The customer picks a
+   1–5 star rating, then writes a short review in a modal — it gets posted
+   to the configured reviews/testimonials channel.
+7. Staff click **Close Ticket** → bot saves a gzipped transcript to the log
+   channel, then deletes the ticket channel a few seconds later.
 
 ## Project structure
 
@@ -29,30 +38,42 @@ channels. Built with `discord.js` v14, meant to run on Railway.
 src/
   index.js            entry point, wires up interaction routing, posts panel on boot
   config.js            loads .env into one config object
-  data/services.js      the 5 service options + starting prices (edit here)
+  deploy-commands.js   registers the /payment slash command
+  data/
+    services.js          the service options + starting prices
+    theme.js              shared embed colors
+    tos.js                 Terms of Service text shown in every new ticket
+    paymentMethods.js     payment links shown by /payment
   utils/sanitize.js     username -> valid channel name
   utils/transcript.js   fetches channel history -> plain text transcript
   handlers/
     panel.js             builds panel embed + ensures it's posted/pinned
     openCommission.js    button -> shows the service select menu
-    selectService.js     select menu -> creates the ticket channel + posts summary
+    selectService.js     select menu -> creates ticket, posts summary + ToS
+    tosAgree.js            "I Agree" button -> marks ToS agreed in the embed
+    paymentCommand.js      /payment slash command -> payment details embed
+    requestFeedback.js     staff button -> posts "Leave a Review" prompt
+    leaveReview.js          customer button -> star rating picker
+    reviewStars.js          star pick -> review text modal
+    submitReview.js          modal submit -> posts testimonial to reviews channel
     closeTicket.js         close button -> transcript + delete
 ```
 
-To change prices or add/remove a service, edit `src/data/services.js` — every
-other file reads from it, nothing else needs to change.
+To change prices or add/remove a service, edit `src/data/services.js`. To
+change the Terms of Service wording, edit `src/data/tos.js`. To change
+payment links, edit `src/data/paymentMethods.js`. Every other file reads
+from these, nothing else needs to change.
 
 ## 1. Create the Discord application
 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) → **New Application**.
 2. **Bot** tab → **Reset Token**, copy it → this is `DISCORD_TOKEN`.
-3. **OAuth2 → URL Generator**:
-   - Scopes: `bot`
+3. **OAuth2 → General** → copy **Client ID** → this is `CLIENT_ID` (needed for `/payment`).
+4. **OAuth2 → URL Generator**:
+   - Scopes: `bot`, `applications.commands`
    - Bot permissions: `Manage Channels`, `View Channels`, `Send Messages`,
      `Manage Messages`, `Attach Files`, `Read Message History`, `Embed Links`
    - Open the generated URL and invite the bot to your server.
-
-(No `applications.commands` scope needed — there's no slash command.)
 
 ## 2. Set up server-side pieces
 
@@ -63,6 +84,7 @@ Discord settings → Advanced, then right-click → Copy ID):
 - A role called **Studio Duo Team** (or whatever you like) → `STAFF_ROLE_ID`
 - A category called **Commissions** → `COMMISSIONS_CATEGORY_ID`
 - A private log channel (staff-only) for transcripts → `LOG_CHANNEL_ID`
+- A public channel for testimonials → `REVIEWS_CHANNEL_ID`
 - Optionally a separate role to `@`-ping on new tickets → `NOTIFY_ROLE_ID`
   (defaults to the staff role if left blank)
 
@@ -77,18 +99,22 @@ Railway project:
 
 ```
 DISCORD_TOKEN=
+CLIENT_ID=
+GUILD_ID=            # optional, for instant slash command registration during dev
 COMMISSIONS_CHANNEL_ID=
 STAFF_ROLE_ID=
 NOTIFY_ROLE_ID=       # optional
 COMMISSIONS_CATEGORY_ID=
 LOG_CHANNEL_ID=
+REVIEWS_CHANNEL_ID=
 STAFF_ROLE_NAME=Studio Duo Team
 ```
 
-## 4. Install and run
+## 4. Install, register /payment, run
 
 ```bash
 npm install
+npm run deploy   # registers /payment
 npm start
 ```
 
@@ -101,7 +127,10 @@ automatically — check the console log for confirmation.
 2. In Railway: **New Project → Deploy from GitHub repo**, pick this repo.
 3. Add the environment variables from step 3 in Railway's **Variables** tab.
 4. Railway runs `npm install` then `npm start` automatically (from
-   `package.json`). The panel gets posted on that first boot.
+   `package.json`). The panel gets posted on that first boot. Run
+   `npm run deploy` once (via Railway's shell, or locally with the same
+   `.env`) to register `/payment` — only needed once, or again if you
+   change the command's options.
 
 ## Notes / guardrails already handled
 

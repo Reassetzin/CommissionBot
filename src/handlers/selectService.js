@@ -10,6 +10,7 @@ const {
 } = require('discord.js');
 const services = require('../data/services');
 const theme = require('../data/theme');
+const tos = require('../data/tos');
 const config = require('../config');
 const { ticketChannelName } = require('../utils/sanitize');
 
@@ -128,6 +129,11 @@ async function handle(interaction) {
 
   const closeRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
+      .setCustomId('request_feedback')
+      .setLabel('Request Feedback')
+      .setEmoji('⭐')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
       .setCustomId('close_ticket')
       .setLabel('Close Ticket')
       .setEmoji('🔒')
@@ -139,6 +145,18 @@ async function handle(interaction) {
   pingParts.push(`New commission ticket from <@${interaction.user.id}>`);
 
   await channel.send({ content: pingParts.join(' '), embeds: [summaryEmbed], components: [closeRow] });
+
+  const tosEmbed = new EmbedBuilder()
+    .setTitle(tos.title)
+    .setColor(theme.info)
+    .setDescription(tos.points.map((p) => `• ${p}`).join('\n\n'))
+    .setFooter({ text: 'Please agree before we start work on your commission.' });
+
+  const tosRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('tos_agree').setLabel('I Agree').setEmoji('✅').setStyle(ButtonStyle.Success)
+  );
+
+  await channel.send({ embeds: [tosEmbed], components: [tosRow] });
 
   await interaction.followUp({
     content: `Your commission ticket has been created: <#${channel.id}>`,
