@@ -45,6 +45,20 @@ async function handle(interaction) {
         PermissionFlagsBits.AttachFiles,
       ],
     },
+    {
+      // Without this, the @everyone deny above blocks the bot too (unless it
+      // happens to have server-wide Administrator), so it can create the
+      // channel but then fail to post the summary embed into it.
+      id: interaction.client.user.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.EmbedLinks,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.ManageChannels,
+      ],
+    },
   ];
   if (config.staffRoleId) {
     overwrites.push({
