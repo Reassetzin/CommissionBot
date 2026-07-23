@@ -116,7 +116,7 @@ async function handle(interaction) {
       {
         name: '📝 Next steps',
         value:
-          "Reply here with your **deadline** and a short **description** of what you need — references, style, scope, anything that helps. Our team will follow up with a full quote.",
+          "Reply here with your **deadline** and a short **description** of what you need — references, style, scope, anything that helps. We'll follow up with a full quote.",
         inline: false,
       }
     )
