@@ -1,4 +1,11 @@
-const { createCanvas } = require('@napi-rs/canvas');
+const path = require('path');
+const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
+
+// Railway's container has no system fonts installed, so a generic family like
+// 'sans-serif' resolves to nothing and text silently fails to draw. Bundling
+// and registering a real font file guarantees labels render everywhere.
+const FONT_FAMILY = 'Studio Duo Chart Font';
+GlobalFonts.registerFromPath(path.join(__dirname, '../assets/fonts/Roboto-Variable.ttf'), FONT_FAMILY);
 
 const WIDTH = 700;
 const HEIGHT = 380;
@@ -31,7 +38,7 @@ function renderRevenueChart({ labels, data }) {
 
   // Title
   ctx.fillStyle = '#f2f3f5';
-  ctx.font = 'bold 22px sans-serif';
+  ctx.font = `bold 22px ${FONT_FAMILY}`;
   ctx.textBaseline = 'top';
   ctx.fillText('Monthly Revenue', PADDING.left, 20);
 
@@ -47,7 +54,7 @@ function renderRevenueChart({ labels, data }) {
   ctx.strokeStyle = 'rgba(255,255,255,0.08)';
   ctx.lineWidth = 1;
   ctx.fillStyle = '#9aa0a6';
-  ctx.font = '12px sans-serif';
+  ctx.font = `12px ${FONT_FAMILY}`;
   for (let i = 0; i <= gridLines; i++) {
     const y = PADDING.top + (chartH / gridLines) * i;
     ctx.beginPath();
@@ -88,13 +95,13 @@ function renderRevenueChart({ labels, data }) {
 
     // Value label above the bar
     ctx.fillStyle = '#f2f3f5';
-    ctx.font = 'bold 13px sans-serif';
+    ctx.font = `bold 13px ${FONT_FAMILY}`;
     ctx.textAlign = 'center';
     ctx.fillText(`$${Math.round(value)}`, x + barW / 2, y - 20);
 
     // Month label below the axis
     ctx.fillStyle = isCurrentMonth ? '#7dd3fc' : '#9aa0a6';
-    ctx.font = isCurrentMonth ? 'bold 13px sans-serif' : '13px sans-serif';
+    ctx.font = isCurrentMonth ? `bold 13px ${FONT_FAMILY}` : `13px ${FONT_FAMILY}`;
     ctx.fillText(labels[i], x + barW / 2, baseY + 12);
   });
 
