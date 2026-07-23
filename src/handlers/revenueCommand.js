@@ -1,8 +1,8 @@
-const { EmbedBuilder, MessageFlags } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder, MessageFlags } = require('discord.js');
 const theme = require('../data/theme');
 const config = require('../config');
 const { fetchPaymentRecords } = require('../utils/paymentLedger');
-const { buildBarChartUrl } = require('../utils/chart');
+const { renderRevenueChart } = require('../utils/chart');
 
 const PERIOD_MS = {
   week: 7 * 24 * 60 * 60 * 1000,
@@ -80,11 +80,11 @@ async function handle(interaction) {
   const total = records.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
   const buckets = bucketByMonth(allRecords); // chart always shows the full 6-month trend, independent of the period filter
-  const chartUrl = buildBarChartUrl({
+  const chartBuffer = renderRevenueChart({
     labels: buckets.map((b) => b.label),
     data: buckets.map((b) => Math.round(b.total * 100) / 100),
-    color: '#38bdf8',
   });
+  const chartAttachment = new AttachmentBuilder(chartBuffer, { name: 'revenue-chart.png' });
 
   const embed = new EmbedBuilder()
     .setTitle('💰 Studio Duo Revenue')
@@ -95,14 +95,14 @@ async function handle(interaction) {
       { name: '🧾 Payments', value: `${records.length}`, inline: true },
       { name: '💵 Total', value: `$${total.toFixed(2)}`, inline: true }
     )
-    .setImage(chartUrl)
+    .setImage('attachment://revenue-chart.png')
     .setFooter({ text: 'Studio Duo Commissions • Monthly totals, last 6 months' })
     .setTimestamp();
 
   const guildIcon = interaction.guild.iconURL({ size: 128 });
   if (guildIcon) embed.setThumbnail(guildIcon);
 
-  await interaction.editReply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed], files: [chartAttachment] });
 }
 
 module.exports = { handle };
