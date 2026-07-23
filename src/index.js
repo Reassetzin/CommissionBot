@@ -14,6 +14,9 @@ const submitReview = require('./handlers/submitReview');
 const paymentCommand = require('./handlers/paymentCommand');
 const markPaid = require('./handlers/markPaid');
 const revenueCommand = require('./handlers/revenueCommand');
+const revenueReset = require('./handlers/revenueReset');
+const confirmRevenueReset = require('./handlers/confirmRevenueReset');
+const cancelRevenueReset = require('./handlers/cancelRevenueReset');
 
 if (!config.token) {
   console.error('Missing DISCORD_TOKEN in your environment. Check .env / Railway variables.');
@@ -38,6 +41,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await paymentCommand.handle(interaction);
     } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue') {
       await revenueCommand.handle(interaction);
+    } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue-reset') {
+      await revenueReset.handle(interaction);
+    } else if (interaction.isButton() && interaction.customId === 'confirm_revenue_reset') {
+      await confirmRevenueReset.handle(interaction);
+    } else if (interaction.isButton() && interaction.customId === 'cancel_revenue_reset') {
+      await cancelRevenueReset.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'open_commission') {
       await openCommission.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'close_ticket') {

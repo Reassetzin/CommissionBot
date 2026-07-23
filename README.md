@@ -26,8 +26,10 @@ channels. Built with `discord.js` v14, meant to run on Railway.
    to post a payment-details embed with your links (edit
    `src/data/paymentMethods.js`) and a **Mark as Paid** button. Clicking it
    marks the embed paid and logs the amount for `/revenue`.
-6. `/revenue period:month` (or `week` / `all`) gives a running total of
-   confirmed payments — no spreadsheet needed.
+6. `/revenue period:week` (or `month` / `all`) gives a running total of
+   confirmed payments, plus a 6-month trend chart. `/revenue-reset` wipes
+   every logged payment (with a confirm/cancel step first) if you ever want
+   to start the ledger over from $0.
 7. When the commission is delivered, staff click **Request Feedback** →
    posts a prompt with a **Leave a Review** button. The customer picks a
    1–5 star rating, then writes a short review in a modal — it gets posted
@@ -58,7 +60,10 @@ src/
     tosAgree.js            "I Agree" button -> marks ToS agreed in the embed
     paymentCommand.js      /payment slash command -> payment details embed
     markPaid.js             "Mark as Paid" button -> updates embed + logs payment
-    revenueCommand.js       /revenue slash command -> totals from the ledger
+    revenueCommand.js       /revenue slash command -> totals + chart from the ledger
+    revenueReset.js          /revenue-reset command -> confirm/cancel prompt
+    confirmRevenueReset.js    confirm button -> deletes all logged payments
+    cancelRevenueReset.js      cancel button -> no-op
     requestFeedback.js     staff button -> posts "Leave a Review" prompt
     leaveReview.js          customer button -> star rating picker
     reviewStars.js          star pick -> review text modal

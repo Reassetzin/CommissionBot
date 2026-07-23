@@ -30,6 +30,10 @@ const commands = [
         )
     )
     .setDefaultMemberPermissions(0),
+  new SlashCommandBuilder()
+    .setName('revenue-reset')
+    .setDescription('Permanently delete all logged payment records and start over (staff only)')
+    .setDefaultMemberPermissions(0),
 ].map((c) => c.toJSON());
 
 /**

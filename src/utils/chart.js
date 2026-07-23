@@ -36,11 +36,12 @@ function renderRevenueChart({ labels, data }) {
   // embed (matches Discord dark theme; light-theme viewers will see the
   // light gridlines/text against their embed background instead).
 
-  // Title
+  // Title, centered at the top
   ctx.fillStyle = '#f2f3f5';
   ctx.font = `bold 22px ${FONT_FAMILY}`;
   ctx.textBaseline = 'top';
-  ctx.fillText('Monthly Revenue', PADDING.left, 20);
+  ctx.textAlign = 'center';
+  ctx.fillText('Monthly Revenue', WIDTH / 2, 20);
 
   const chartW = WIDTH - PADDING.left - PADDING.right;
   const chartH = HEIGHT - PADDING.top - PADDING.bottom;
