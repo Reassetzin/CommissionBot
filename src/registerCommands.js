@@ -36,6 +36,21 @@ async function registerCommands() {
     console.log(
       `Registered ${commands.length} slash command(s) ${config.guildId ? `to guild ${config.guildId}` : 'globally'}.`
     );
+
+    // If we're registering to a specific guild, wipe any leftover *global*
+    // commands with the same names — otherwise switching from global to
+    // guild-scoped (or back) leaves stale duplicates showing up in the "/"
+    // picker until manually cleared.
+    if (config.guildId) {
+      const globalCommands = await rest.get(Routes.applicationCommands(config.clientId));
+      const commandNames = new Set(commands.map((c) => c.name));
+      const stale = globalCommands.filter((c) => commandNames.has(c.name));
+
+      for (const c of stale) {
+        await rest.delete(Routes.applicationCommand(config.clientId, c.id));
+        console.log(`Removed stale global command: /${c.name}`);
+      }
+    }
   } catch (err) {
     console.error('Failed to register slash commands:', err);
   }
