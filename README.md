@@ -10,16 +10,17 @@ channels. Built with `discord.js` v14, meant to run on Railway.
    deleted/unpinned it), it posts and pins one automatically — **no command
    needed**.
 2. Clicking **Open Commission** shows an ephemeral multi-select dropdown (3D
-   Model, Map Build, UI per Frame, UI Full Game Deal, Not sure / Other).
-3. Submitting the select opens a modal: budget range, deadline, description.
-4. On submit, the bot creates a private channel `commission-<username>` under
-   the configured "Commissions" category, visible only to that user and the
-   staff role, and posts a summary embed + a **Close Ticket** button, pinging
-   the notify role.
-5. A user can't open a second ticket while one is already open — the bot
+   Model, Map Build, UI per Frame, Not sure / Other).
+3. Selecting service(s) immediately creates a private channel
+   `commission-<username>` under the configured "Commissions" category,
+   visible only to that user and the staff role, and posts a summary embed
+   listing the selected services + starting prices, with a prompt asking
+   the user to reply with their deadline and a project description — plus
+   a **Close Ticket** button, pinging the notify role.
+4. A user can't open a second ticket while one is already open — the bot
    checks for an existing `commission-<username>` channel both when the
-   button is clicked and again on modal submit.
-6. Staff clicks **Close Ticket** → bot saves a plain-text transcript to the
+   button is clicked and again on service selection.
+5. Staff clicks **Close Ticket** → bot saves a gzipped transcript to the
    log channel, then deletes the ticket channel a few seconds later.
 
 ## Project structure
@@ -34,8 +35,7 @@ src/
   handlers/
     panel.js             builds panel embed + ensures it's posted/pinned
     openCommission.js    button -> shows the service select menu
-    selectService.js     select menu -> shows the details modal
-    submitTicket.js       modal submit -> creates the ticket channel
+    selectService.js     select menu -> creates the ticket channel + posts summary
     closeTicket.js         close button -> transcript + delete
 ```
 

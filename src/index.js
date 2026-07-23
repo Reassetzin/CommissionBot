@@ -4,7 +4,6 @@ const config = require('./config');
 const panel = require('./handlers/panel');
 const openCommission = require('./handlers/openCommission');
 const selectService = require('./handlers/selectService');
-const submitTicket = require('./handlers/submitTicket');
 const closeTicket = require('./handlers/closeTicket');
 
 if (!config.token) {
@@ -31,8 +30,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await closeTicket.handle(interaction);
     } else if (interaction.isStringSelectMenu() && interaction.customId === 'commission_select') {
       await selectService.handle(interaction);
-    } else if (interaction.isModalSubmit() && interaction.customId.startsWith('commission_modal|')) {
-      await submitTicket.handle(interaction);
     }
   } catch (err) {
     console.error('Interaction error:', err);
