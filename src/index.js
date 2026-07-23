@@ -12,6 +12,8 @@ const leaveReview = require('./handlers/leaveReview');
 const reviewStars = require('./handlers/reviewStars');
 const submitReview = require('./handlers/submitReview');
 const paymentCommand = require('./handlers/paymentCommand');
+const markPaid = require('./handlers/markPaid');
+const revenueCommand = require('./handlers/revenueCommand');
 
 if (!config.token) {
   console.error('Missing DISCORD_TOKEN in your environment. Check .env / Railway variables.');
@@ -34,6 +36,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand() && interaction.commandName === 'payment') {
       await paymentCommand.handle(interaction);
+    } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue') {
+      await revenueCommand.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'open_commission') {
       await openCommission.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'close_ticket') {
@@ -44,6 +48,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await requestFeedback.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'leave_review') {
       await leaveReview.handle(interaction);
+    } else if (interaction.isButton() && interaction.customId === 'mark_paid') {
+      await markPaid.handle(interaction);
     } else if (interaction.isStringSelectMenu() && interaction.customId === 'commission_select') {
       await selectService.handle(interaction);
     } else if (interaction.isStringSelectMenu() && interaction.customId === 'review_stars') {

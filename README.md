@@ -22,14 +22,17 @@ channels. Built with `discord.js` v14, meant to run on Railway.
 4. A user can't open a second ticket while one is already open — the bot
    checks for an existing `commission-<username>` channel both when the
    button is clicked and again on service selection.
-5. Staff run `/payment amount:"$75 (50% deposit)"` in the ticket channel to
-   post a payment-details embed with your links (edit
-   `src/data/paymentMethods.js`).
-6. When the commission is delivered, staff click **Request Feedback** →
+5. Staff run `/payment amount:75 label:"50% deposit"` in the ticket channel
+   to post a payment-details embed with your links (edit
+   `src/data/paymentMethods.js`) and a **Mark as Paid** button. Clicking it
+   marks the embed paid and logs the amount for `/revenue`.
+6. `/revenue period:month` (or `week` / `all`) gives a running total of
+   confirmed payments — no spreadsheet needed.
+7. When the commission is delivered, staff click **Request Feedback** →
    posts a prompt with a **Leave a Review** button. The customer picks a
    1–5 star rating, then writes a short review in a modal — it gets posted
    to the configured reviews/testimonials channel.
-7. Staff click **Close Ticket** → bot saves a gzipped transcript to the log
+8. Staff click **Close Ticket** → bot saves a gzipped transcript to the log
    channel, then deletes the ticket channel a few seconds later.
 
 ## Project structure
@@ -44,14 +47,18 @@ src/
     theme.js              shared embed colors
     tos.js                 Terms of Service text shown in every new ticket
     paymentMethods.js     payment links shown by /payment
-  utils/sanitize.js     username -> valid channel name
-  utils/transcript.js   fetches channel history -> plain text transcript
+  utils/
+    sanitize.js          username -> valid channel name
+    transcript.js         fetches channel history -> plain text transcript
+    paymentLedger.js       reads payment records back out of the log channel
   handlers/
     panel.js             builds panel embed + ensures it's posted/pinned
     openCommission.js    button -> shows the service select menu
     selectService.js     select menu -> creates ticket, posts summary + ToS
     tosAgree.js            "I Agree" button -> marks ToS agreed in the embed
     paymentCommand.js      /payment slash command -> payment details embed
+    markPaid.js             "Mark as Paid" button -> updates embed + logs payment
+    revenueCommand.js       /revenue slash command -> totals from the ledger
     requestFeedback.js     staff button -> posts "Leave a Review" prompt
     leaveReview.js          customer button -> star rating picker
     reviewStars.js          star pick -> review text modal
@@ -84,6 +91,9 @@ Discord settings → Advanced, then right-click → Copy ID):
 - A role called **Studio Duo Team** (or whatever you like) → `STAFF_ROLE_ID`
 - A category called **Commissions** → `COMMISSIONS_CATEGORY_ID`
 - A private log channel (staff-only) for transcripts → `LOG_CHANNEL_ID`
+- Optionally a separate channel for the payment ledger → `PAYMENT_LOG_CHANNEL_ID`
+  (defaults to `LOG_CHANNEL_ID` if left blank — either is fine, it's just
+  read back by `/revenue`, nobody needs to read it directly)
 - A public channel for testimonials → `REVIEWS_CHANNEL_ID`
 - Optionally a separate role to `@`-ping on new tickets → `NOTIFY_ROLE_ID`
   (defaults to the staff role if left blank)
@@ -106,6 +116,7 @@ STAFF_ROLE_ID=
 NOTIFY_ROLE_ID=       # optional
 COMMISSIONS_CATEGORY_ID=
 LOG_CHANNEL_ID=
+PAYMENT_LOG_CHANNEL_ID=  # optional, defaults to LOG_CHANNEL_ID
 REVIEWS_CHANNEL_ID=
 STAFF_ROLE_NAME=Studio Duo Team
 ```

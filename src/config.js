@@ -13,6 +13,8 @@ module.exports = {
   notifyRoleId: process.env.NOTIFY_ROLE_ID || process.env.STAFF_ROLE_ID || null,
   commissionsCategoryId: process.env.COMMISSIONS_CATEGORY_ID || null,
   logChannelId: process.env.LOG_CHANNEL_ID || null,
+  // Ledger for /revenue — defaults to the transcript log channel if not set separately.
+  paymentLogChannelId: process.env.PAYMENT_LOG_CHANNEL_ID || process.env.LOG_CHANNEL_ID || null,
   reviewsChannelId: process.env.REVIEWS_CHANNEL_ID || null,
   staffRoleName: process.env.STAFF_ROLE_NAME || 'Studio Duo Team',
 };

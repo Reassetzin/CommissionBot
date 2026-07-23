@@ -5,13 +5,31 @@ const commands = [
   new SlashCommandBuilder()
     .setName('payment')
     .setDescription('Post payment details and links for the customer in this channel (staff only)')
+    .addNumberOption((option) =>
+      option.setName('amount').setDescription('Amount due in USD, e.g. 75.50').setRequired(true).setMinValue(0)
+    )
     .addStringOption((option) =>
-      option.setName('amount').setDescription('Amount due, e.g. "$75 (50% deposit)"').setRequired(true)
+      option.setName('label').setDescription('What this is for, e.g. "50% deposit"').setRequired(false)
     )
     .addStringOption((option) =>
       option.setName('note').setDescription('Optional note for the customer').setRequired(false)
     )
     .setDefaultMemberPermissions(0), // hidden by default; grant to staff via Server Settings > Integrations
+  new SlashCommandBuilder()
+    .setName('revenue')
+    .setDescription('See total confirmed payments (staff only)')
+    .addStringOption((option) =>
+      option
+        .setName('period')
+        .setDescription('Time range')
+        .setRequired(false)
+        .addChoices(
+          { name: 'All time', value: 'all' },
+          { name: 'Last 7 days', value: 'week' },
+          { name: 'Last 30 days', value: 'month' }
+        )
+    )
+    .setDefaultMemberPermissions(0),
 ].map((c) => c.toJSON());
 
 /**
