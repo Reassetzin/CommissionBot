@@ -32,9 +32,9 @@ function renderRevenueChart({ labels, data }) {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
 
-  // Background, matching Discord's dark embed shade
-  ctx.fillStyle = '#2b2d31';
-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  // No background fill — canvas stays transparent so it blends into the
+  // embed (matches Discord dark theme; light-theme viewers will see the
+  // light gridlines/text against their embed background instead).
 
   // Title
   ctx.fillStyle = '#f2f3f5';
