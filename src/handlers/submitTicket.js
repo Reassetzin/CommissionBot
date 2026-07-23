@@ -9,6 +9,7 @@ const {
   ButtonStyle,
 } = require('discord.js');
 const services = require('../data/services');
+const theme = require('../data/theme');
 const config = require('../config');
 const { ticketChannelName } = require('../utils/sanitize');
 
@@ -94,11 +95,6 @@ async function handle(interaction) {
     });
   }
 
-  const serviceLines =
-    selectedServices
-      .map((s) => `${s.emoji} **${s.label}** — ${s.price ? `starting at $${s.price}` : 'custom quote'}`)
-      .join('\n') || 'None specified';
-
   const numericTotal = selectedServices.reduce((sum, s) => (s.price ? sum + s.price : sum), 0);
   const hasCustomQuote = selectedServices.some((s) => s.price === null);
   const totalLine = hasCustomQuote
@@ -109,17 +105,27 @@ async function handle(interaction) {
 
   const summaryEmbed = new EmbedBuilder()
     .setTitle('🎟️ New Commission Request')
-    .setColor(0x57f287)
+    .setColor(theme.success)
+    .setAuthor({
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ size: 128 }),
+    })
     .addFields(
-      { name: 'Requested by', value: `<@${interaction.user.id}>`, inline: false },
-      { name: 'Service(s)', value: serviceLines, inline: false },
-      { name: 'Starting total', value: totalLine, inline: true },
-      { name: 'Budget range', value: budget, inline: true },
-      { name: 'Deadline', value: deadline, inline: true },
-      { name: 'Description', value: description, inline: false }
+      ...selectedServices.map((s) => ({
+        name: `${s.emoji} ${s.label}`,
+        value: s.price ? `Starting at $${s.price}` : 'Custom quote',
+        inline: true,
+      })),
+      { name: '💰 Starting total', value: totalLine, inline: true },
+      { name: '📅 Deadline', value: deadline, inline: true },
+      { name: '💵 Budget range', value: budget, inline: true },
+      { name: '📝 Description', value: description, inline: false }
     )
     .setTimestamp()
-    .setFooter({ text: 'Studio Duo Commissions' });
+    .setFooter({ text: `Studio Duo Commissions • ${interaction.user.tag}` });
+
+  const guildIcon = interaction.guild.iconURL({ size: 128 });
+  if (guildIcon) summaryEmbed.setThumbnail(guildIcon);
 
   const closeRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -129,7 +135,10 @@ async function handle(interaction) {
       .setStyle(ButtonStyle.Danger)
   );
 
-  const pingContent = config.notifyRoleId ? `<@&${config.notifyRoleId}> new commission ticket:` : undefined;
+  const pingParts = [];
+  if (config.notifyRoleId) pingParts.push(`<@&${config.notifyRoleId}>`);
+  pingParts.push(`New commission ticket from <@${interaction.user.id}>`);
+  const pingContent = pingParts.join(' ');
 
   await channel.send({ content: pingContent, embeds: [summaryEmbed], components: [closeRow] });
 

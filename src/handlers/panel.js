@@ -1,23 +1,29 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const services = require('../data/services');
+const theme = require('../data/theme');
 const config = require('../config');
 
 const PANEL_TITLE = '📋 Studio Duo Commissions';
 
-function buildPanel() {
-  const serviceLines = Object.values(services)
-    .map((s) => `${s.emoji} **${s.label}** — ${s.price ? `starting at $${s.price}` : 'custom quote'}`)
-    .join('\n');
-
+function buildPanel(guild) {
   const embed = new EmbedBuilder()
     .setTitle(PANEL_TITLE)
-    .setColor(0x5865f2)
+    .setColor(theme.brand)
     .setDescription(
-      `Want to commission custom work from Studio Duo? Click **Open Commission** below to get started.\n\n` +
-        `**Our Services**\n${serviceLines}\n\n` +
-        `Not sure which fits? Pick **Not sure / Other** and describe what you need — we'll follow up with a quote.`
+      "Want to commission custom work from Studio Duo? Click **Open Commission** below to get started — " +
+        'you can select as many services as you need.'
+    )
+    .addFields(
+      Object.values(services).map((s) => ({
+        name: `${s.emoji} ${s.label}`,
+        value: s.price ? `Starting at $${s.price}` : 'Custom quote',
+        inline: true,
+      }))
     )
     .setFooter({ text: 'Starting prices are a baseline — final quotes depend on scope.' });
+
+  const guildIcon = guild?.iconURL({ size: 256 });
+  if (guildIcon) embed.setThumbnail(guildIcon);
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -61,7 +67,7 @@ async function ensurePanel(client) {
     return;
   }
 
-  const { embed, row } = buildPanel();
+  const { embed, row } = buildPanel(channel.guild);
   const msg = await channel.send({ embeds: [embed], components: [row] });
   await msg.pin().catch((err) => console.warn('Could not pin panel message:', err.message));
   console.log('Posted and pinned a new commission panel.');
