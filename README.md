@@ -11,17 +11,19 @@ channels. Built with `discord.js` v14, meant to run on Railway.
    needed**.
 2. Clicking **Open Commission** shows an ephemeral multi-select dropdown (3D
    Model, Map Build, UI per Frame, Not sure / Other).
-3. Selecting service(s) immediately creates a private channel
-   `commission-<username>` under the configured "Commissions" category,
-   visible only to that user and the staff role. The bot posts:
+3. Selecting service(s) shows a summary + **Confirm & Open Ticket** button —
+   the person can change their selection before confirming. Only on confirm
+   does the bot create a private channel `commission-<username>` under the
+   configured "Commissions" category, visible only to that user and the
+   staff role. The bot posts:
    - a summary embed listing the selected services + starting prices, with a
      prompt asking the user to reply with their deadline and a project
-     description, plus **Request Feedback** and **Close Ticket** buttons
+     description, plus a **Close Ticket** button
    - a Terms of Service embed (edit `src/data/tos.js`) with an **I Agree**
      button — only the ticket opener can click it
 4. A user can't open a second ticket while one is already open — the bot
-   checks for an existing `commission-<username>` channel both when the
-   button is clicked and again on service selection.
+   checks for an existing `commission-<username>` channel at selection time
+   and again right before creating the channel.
 5. Staff run `/payment amount:75 label:"50% deposit"` in the ticket channel
    to post a payment-details embed with your links (edit
    `src/data/paymentMethods.js`) and a **Mark as Paid** button. Clicking it
@@ -30,10 +32,10 @@ channels. Built with `discord.js` v14, meant to run on Railway.
    confirmed payments, plus a 6-month trend chart. `/revenue-reset` wipes
    every logged payment (with a confirm/cancel step first) if you ever want
    to start the ledger over from $0.
-7. When the commission is delivered, staff click **Request Feedback** →
-   posts a prompt with a **Leave a Review** button. The customer picks a
-   1–5 star rating, then writes a short review in a modal — it gets posted
-   to the configured reviews/testimonials channel.
+7. When the commission is delivered, staff run `/feedback` in the ticket
+   channel → posts a prompt with a **Leave a Review** button. The customer
+   picks a 1–5 star rating, then writes a short review in a modal — it gets
+   posted to the configured reviews/testimonials channel.
 8. Staff click **Close Ticket** → bot saves a gzipped transcript to the log
    channel, then deletes the ticket channel a few seconds later.
 
@@ -56,7 +58,8 @@ src/
   handlers/
     panel.js             builds panel embed + ensures it's posted/pinned
     openCommission.js    button -> shows the service select menu
-    selectService.js     select menu -> creates ticket, posts summary + ToS
+    selectService.js     select menu -> shows selection summary + confirm button
+    confirmCommission.js  confirm button -> creates ticket, posts summary + ToS
     tosAgree.js            "I Agree" button -> marks ToS agreed in the embed
     paymentCommand.js      /payment slash command -> payment details embed
     markPaid.js             "Mark as Paid" button -> updates embed + logs payment
@@ -64,7 +67,7 @@ src/
     revenueReset.js          /revenue-reset command -> confirm/cancel prompt
     confirmRevenueReset.js    confirm button -> deletes all logged payments
     cancelRevenueReset.js      cancel button -> no-op
-    requestFeedback.js     staff button -> posts "Leave a Review" prompt
+    requestFeedback.js     /feedback slash command -> posts "Leave a Review" prompt
     leaveReview.js          customer button -> star rating picker
     reviewStars.js          star pick -> review text modal
     submitReview.js          modal submit -> posts testimonial to reviews channel

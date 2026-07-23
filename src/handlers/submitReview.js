@@ -14,17 +14,17 @@ async function handle(interaction) {
 
     if (reviewsChannel) {
       const embed = new EmbedBuilder()
-        .setTitle('🌟 New Testimonial')
         .setColor(theme.gold)
         .setAuthor({
           name: interaction.user.displayName,
           iconURL: interaction.user.displayAvatarURL({ size: 128 }),
         })
-        .addFields(
-          { name: 'Rating', value: `${stars} (${rating}/5)`, inline: false },
-          { name: 'Review', value: reviewText, inline: false }
-        )
+        .setDescription(`### ${stars}\n> ${reviewText.replace(/\n/g, '\n> ')}`)
+        .setFooter({ text: 'Studio Duo Commissions' })
         .setTimestamp();
+
+      const guildIcon = interaction.guild.iconURL({ size: 128 });
+      if (guildIcon) embed.setThumbnail(guildIcon);
 
       await reviewsChannel
         .send({ embeds: [embed] })

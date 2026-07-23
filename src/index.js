@@ -5,6 +5,7 @@ const panel = require('./handlers/panel');
 const { registerCommands } = require('./registerCommands');
 const openCommission = require('./handlers/openCommission');
 const selectService = require('./handlers/selectService');
+const confirmCommission = require('./handlers/confirmCommission');
 const closeTicket = require('./handlers/closeTicket');
 const tosAgree = require('./handlers/tosAgree');
 const requestFeedback = require('./handlers/requestFeedback');
@@ -39,6 +40,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand() && interaction.commandName === 'payment') {
       await paymentCommand.handle(interaction);
+    } else if (interaction.isChatInputCommand() && interaction.commandName === 'feedback') {
+      await requestFeedback.handle(interaction);
     } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue') {
       await revenueCommand.handle(interaction);
     } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue-reset') {
@@ -53,12 +56,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await closeTicket.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'tos_agree') {
       await tosAgree.handle(interaction);
-    } else if (interaction.isButton() && interaction.customId === 'request_feedback') {
-      await requestFeedback.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'leave_review') {
       await leaveReview.handle(interaction);
     } else if (interaction.isButton() && interaction.customId === 'mark_paid') {
       await markPaid.handle(interaction);
+    } else if (interaction.isButton() && interaction.customId.startsWith('confirm_commission|')) {
+      await confirmCommission.handle(interaction);
     } else if (interaction.isStringSelectMenu() && interaction.customId === 'commission_select') {
       await selectService.handle(interaction);
     } else if (interaction.isStringSelectMenu() && interaction.customId === 'review_stars') {

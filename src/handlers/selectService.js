@@ -1,25 +1,12 @@
-const {
-  ChannelType,
-  PermissionFlagsBits,
-  OverwriteType,
-  MessageFlags,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require('discord.js');
+const { StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const services = require('../data/services');
-const theme = require('../data/theme');
-const tos = require('../data/tos');
-const config = require('../config');
 const { ticketChannelName } = require('../utils/sanitize');
 
 async function handle(interaction) {
-  const selectedServices = interaction.values.map((k) => services[k]).filter(Boolean);
+  const selectedKeys = interaction.values;
   const channelName = ticketChannelName(interaction.user.username);
 
-  // Re-check for an existing ticket here too, in case one was opened in the
-  // window between the button click and this selection (race condition guardrail).
+  // Early check for a nicer UX — the real guardrail is re-checked on confirm.
   const existing = interaction.guild.channels.cache.find((c) => c.name === channelName);
   if (existing) {
     return interaction.update({
@@ -28,139 +15,40 @@ async function handle(interaction) {
     });
   }
 
-  await interaction.update({ content: '🎟️ Creating your ticket...', components: [] });
+  const selectedServices = selectedKeys.map((k) => services[k]).filter(Boolean);
+  const summaryLines = selectedServices
+    .map((s) => `${s.emoji} **${s.label}** — ${s.price ? `starting at $${s.price}` : 'custom quote'}`)
+    .join('\n');
 
-  const overwrites = [
-    {
-      id: interaction.guild.roles.everyone.id,
-      type: OverwriteType.Role,
-      deny: [PermissionFlagsBits.ViewChannel],
-    },
-    {
-      id: interaction.user.id,
-      type: OverwriteType.Member,
-      allow: [
-        PermissionFlagsBits.ViewChannel,
-        PermissionFlagsBits.SendMessages,
-        PermissionFlagsBits.ReadMessageHistory,
-        PermissionFlagsBits.AttachFiles,
-      ],
-    },
-    {
-      // Without this, the @everyone deny above blocks the bot too (unless it
-      // happens to have server-wide Administrator), so it can create the
-      // channel but then fail to post the summary embed into it.
-      id: interaction.client.user.id,
-      type: OverwriteType.Member,
-      allow: [
-        PermissionFlagsBits.ViewChannel,
-        PermissionFlagsBits.SendMessages,
-        PermissionFlagsBits.ReadMessageHistory,
-        PermissionFlagsBits.EmbedLinks,
-        PermissionFlagsBits.AttachFiles,
-        PermissionFlagsBits.ManageChannels,
-      ],
-    },
-  ];
-  if (config.staffRoleId) {
-    overwrites.push({
-      id: config.staffRoleId,
-      type: OverwriteType.Role,
-      allow: [
-        PermissionFlagsBits.ViewChannel,
-        PermissionFlagsBits.SendMessages,
-        PermissionFlagsBits.ReadMessageHistory,
-      ],
-    });
-  }
+  // Rebuild the menu with the current picks marked as default, so it stays
+  // visually in sync and the person can still change their selection.
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId('commission_select')
+    .setPlaceholder('Select one or more services...')
+    .setMinValues(1)
+    .setMaxValues(Object.keys(services).length)
+    .addOptions(
+      Object.entries(services).map(([value, s]) => ({
+        label: s.label,
+        description: s.price ? `Starting at $${s.price}` : 'Tell us what you need',
+        value,
+        emoji: s.emoji,
+        default: selectedKeys.includes(value),
+      }))
+    );
 
-  let channel;
-  try {
-    channel = await interaction.guild.channels.create({
-      name: channelName,
-      type: ChannelType.GuildText,
-      parent: config.commissionsCategoryId || undefined,
-      topic: `Commission ticket opened by ${interaction.user.id} (${interaction.user.tag})`,
-      permissionOverwrites: overwrites,
-    });
-  } catch (err) {
-    console.error('Failed to create ticket channel:', err);
-    return interaction.followUp({
-      content:
-        'Something went wrong creating your ticket channel. Please contact staff directly, or try again in a moment.',
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  const numericTotal = selectedServices.reduce((sum, s) => (s.price ? sum + s.price : sum), 0);
-  const hasCustomQuote = selectedServices.some((s) => s.price === null);
-  const totalLine = hasCustomQuote
-    ? numericTotal > 0
-      ? `$${numericTotal}+ (plus a custom quote item)`
-      : 'Custom quote needed'
-    : `$${numericTotal}`;
-
-  const summaryEmbed = new EmbedBuilder()
-    .setTitle('🎟️ New Commission Request')
-    .setColor(theme.success)
-    .setAuthor({
-      name: interaction.user.displayName,
-      iconURL: interaction.user.displayAvatarURL({ size: 128 }),
-    })
-    .addFields(
-      ...selectedServices.map((s) => ({
-        name: `${s.emoji} ${s.label}`,
-        value: s.price ? `Starting at $${s.price}` : 'Custom quote',
-        inline: true,
-      })),
-      { name: '💰 Starting total', value: totalLine, inline: true },
-      {
-        name: '📝 Next steps',
-        value:
-          "Reply here with your **deadline** and a short **description** of what you need — references, style, scope, anything that helps. We'll follow up with a full quote.",
-        inline: false,
-      }
-    )
-    .setTimestamp()
-    .setFooter({ text: `Studio Duo Commissions • ${interaction.user.tag}` });
-
-  const guildIcon = interaction.guild.iconURL({ size: 128 });
-  if (guildIcon) summaryEmbed.setThumbnail(guildIcon);
-
-  const closeRow = new ActionRowBuilder().addComponents(
+  const selectRow = new ActionRowBuilder().addComponents(menu);
+  const confirmRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId('request_feedback')
-      .setLabel('Request Feedback')
-      .setEmoji('⭐')
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId('close_ticket')
-      .setLabel('Close Ticket')
-      .setEmoji('🔒')
-      .setStyle(ButtonStyle.Danger)
+      .setCustomId(`confirm_commission|${selectedKeys.join(',')}`)
+      .setLabel('Confirm & Open Ticket')
+      .setEmoji('✅')
+      .setStyle(ButtonStyle.Success)
   );
 
-  const pingParts = [];
-  if (config.notifyRoleId) pingParts.push(`<@&${config.notifyRoleId}>`);
-  pingParts.push(`New commission ticket from <@${interaction.user.id}>`);
-
-  await channel.send({ content: pingParts.join(' '), embeds: [summaryEmbed], components: [closeRow] });
-
-  const tosEmbed = new EmbedBuilder()
-    .setTitle(tos.title)
-    .setColor(theme.info)
-    .setDescription(tos.points.map((p) => `• ${p}`).join('\n\n'))
-    .setFooter({ text: 'Please agree before we start work on your commission.' });
-
-  const tosRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('tos_agree').setLabel('I Agree').setEmoji('✅').setStyle(ButtonStyle.Success)
-  );
-
-  await channel.send({ embeds: [tosEmbed], components: [tosRow] });
-
-  await interaction.followUp({
-    content: `Your commission ticket has been created: <#${channel.id}>`,
-    flags: MessageFlags.Ephemeral,
+  await interaction.update({
+    content: `**You selected:**\n${summaryLines}\n\nChange your selection above if needed, or confirm below to open your ticket.`,
+    components: [selectRow, confirmRow],
   });
 }
 

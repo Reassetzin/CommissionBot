@@ -31,6 +31,10 @@ const commands = [
     )
     .setDefaultMemberPermissions(0),
   new SlashCommandBuilder()
+    .setName('feedback')
+    .setDescription('Post a request for the customer to leave a review in this ticket channel (staff only)')
+    .setDefaultMemberPermissions(0),
+  new SlashCommandBuilder()
     .setName('revenue-reset')
     .setDescription('Permanently delete all logged payment records and start over (staff only)')
     .setDefaultMemberPermissions(0),
