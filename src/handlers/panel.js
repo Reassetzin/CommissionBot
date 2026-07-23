@@ -48,13 +48,13 @@ async function ensurePanel(client) {
   });
   if (!channel) return;
 
-  const pinned = await channel.messages.fetchPinned().catch((err) => {
+  const pinned = await channel.messages.fetchPins().catch((err) => {
     console.error('Could not fetch pinned messages in commissions channel:', err.message);
     return null;
   });
 
-  const alreadyPosted = pinned?.find(
-    (m) => m.author.id === client.user.id && m.embeds[0]?.title === PANEL_TITLE
+  const alreadyPosted = pinned?.items.find(
+    (item) => item.message.author.id === client.user.id && item.message.embeds[0]?.title === PANEL_TITLE
   );
   if (alreadyPosted) {
     console.log('Commission panel already pinned; leaving it as-is.');

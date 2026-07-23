@@ -1,6 +1,8 @@
 const {
   ChannelType,
   PermissionFlagsBits,
+  OverwriteType,
+  MessageFlags,
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,7 +13,7 @@ const config = require('../config');
 const { ticketChannelName } = require('../utils/sanitize');
 
 async function handle(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const serviceKeys = interaction.customId.split('|')[1]?.split(',').filter(Boolean) || [];
   const selectedServices = serviceKeys.map((k) => services[k]).filter(Boolean);
@@ -34,10 +36,12 @@ async function handle(interaction) {
   const overwrites = [
     {
       id: interaction.guild.roles.everyone.id,
+      type: OverwriteType.Role,
       deny: [PermissionFlagsBits.ViewChannel],
     },
     {
       id: interaction.user.id,
+      type: OverwriteType.Member,
       allow: [
         PermissionFlagsBits.ViewChannel,
         PermissionFlagsBits.SendMessages,
@@ -50,6 +54,7 @@ async function handle(interaction) {
       // happens to have server-wide Administrator), so it can create the
       // channel but then fail to post the summary embed into it.
       id: interaction.client.user.id,
+      type: OverwriteType.Member,
       allow: [
         PermissionFlagsBits.ViewChannel,
         PermissionFlagsBits.SendMessages,
@@ -63,6 +68,7 @@ async function handle(interaction) {
   if (config.staffRoleId) {
     overwrites.push({
       id: config.staffRoleId,
+      type: OverwriteType.Role,
       allow: [
         PermissionFlagsBits.ViewChannel,
         PermissionFlagsBits.SendMessages,

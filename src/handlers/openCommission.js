@@ -1,4 +1,4 @@
-const { StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
+const { StringSelectMenuBuilder, ActionRowBuilder, MessageFlags } = require('discord.js');
 const services = require('../data/services');
 const { ticketChannelName } = require('../utils/sanitize');
 
@@ -10,7 +10,7 @@ async function handle(interaction) {
   if (existing) {
     return interaction.reply({
       content: `You already have an open commission ticket: <#${existing.id}>. Please use that one, or ask staff to close it first.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -33,7 +33,7 @@ async function handle(interaction) {
   await interaction.reply({
     content: 'What are you interested in commissioning? (You can pick more than one.)',
     components: [row],
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 }
 

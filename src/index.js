@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events } = require('discord.js');
+const { Client, GatewayIntentBits, Events, MessageFlags } = require('discord.js');
 const config = require('./config');
 
 const panel = require('./handlers/panel');
@@ -36,7 +36,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   } catch (err) {
     console.error('Interaction error:', err);
-    const payload = { content: 'Something went wrong. Please try again or contact staff.', ephemeral: true };
+    const payload = { content: 'Something went wrong. Please try again or contact staff.', flags: MessageFlags.Ephemeral };
     if (interaction.deferred || interaction.replied) {
       await interaction.followUp(payload).catch(() => {});
     } else {

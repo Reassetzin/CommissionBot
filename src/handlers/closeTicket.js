@@ -1,10 +1,10 @@
-const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder, MessageFlags } = require('discord.js');
 const config = require('../config');
 const { buildTranscript } = require('../utils/transcript');
 
 async function handle(interaction) {
   if (!config.staffRoleId || !interaction.member.roles.cache.has(config.staffRoleId)) {
-    return interaction.reply({ content: 'Only staff can close tickets.', ephemeral: true });
+    return interaction.reply({ content: 'Only staff can close tickets.', flags: MessageFlags.Ephemeral });
   }
 
   await interaction.reply({ content: '🔒 Closing this ticket and saving a transcript...' });
