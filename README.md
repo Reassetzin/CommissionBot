@@ -110,16 +110,22 @@ REVIEWS_CHANNEL_ID=
 STAFF_ROLE_NAME=Studio Duo Team
 ```
 
-## 4. Install, register /payment, run
+## 4. Install and run
 
 ```bash
 npm install
-npm run deploy   # registers /payment
 npm start
 ```
 
-On startup the bot posts and pins the panel in `COMMISSIONS_CHANNEL_ID`
-automatically — check the console log for confirmation.
+The `/payment` slash command registers itself automatically the moment the
+bot logs in — no separate step needed, on Railway or anywhere else. On
+startup you should see both:
+
+```
+Logged in as ...
+Registered 1 slash command(s) globally.
+Posted and pinned a new commission panel.
+```
 
 ## 5. Deploy to Railway
 
@@ -127,10 +133,8 @@ automatically — check the console log for confirmation.
 2. In Railway: **New Project → Deploy from GitHub repo**, pick this repo.
 3. Add the environment variables from step 3 in Railway's **Variables** tab.
 4. Railway runs `npm install` then `npm start` automatically (from
-   `package.json`). The panel gets posted on that first boot. Run
-   `npm run deploy` once (via Railway's shell, or locally with the same
-   `.env`) to register `/payment` — only needed once, or again if you
-   change the command's options.
+   `package.json`). The panel gets posted and `/payment` gets registered
+   on that first boot — nothing else to run.
 
 ## Notes / guardrails already handled
 

@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Events, MessageFlags } = require('discord.js'
 const config = require('./config');
 
 const panel = require('./handlers/panel');
+const { registerCommands } = require('./registerCommands');
 const openCommission = require('./handlers/openCommission');
 const selectService = require('./handlers/selectService');
 const closeTicket = require('./handlers/closeTicket');
@@ -25,6 +26,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
+  await registerCommands();
   await panel.ensurePanel(c);
 });
 
