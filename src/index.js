@@ -40,6 +40,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand() && interaction.commandName === 'payment') {
       await paymentCommand.handle(interaction);
+    } else if (interaction.isChatInputCommand() && interaction.commandName === 'close') {
+      await closeTicket.handle(interaction);
     } else if (interaction.isChatInputCommand() && interaction.commandName === 'feedback') {
       await requestFeedback.handle(interaction);
     } else if (interaction.isChatInputCommand() && interaction.commandName === 'revenue') {

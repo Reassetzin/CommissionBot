@@ -31,6 +31,10 @@ const commands = [
     )
     .setDefaultMemberPermissions(0),
   new SlashCommandBuilder()
+    .setName('close')
+    .setDescription('Close this commission ticket, saving a transcript first (staff only)')
+    .setDefaultMemberPermissions(0),
+  new SlashCommandBuilder()
     .setName('feedback')
     .setDescription('Post a request for the customer to leave a review in this ticket channel (staff only)')
     .setDefaultMemberPermissions(0),
